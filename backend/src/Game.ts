@@ -1,26 +1,41 @@
+import { Chess } from "chess.js";
 import { WebSocket } from "ws";
 
 export class Game {
-  public player1: WebSocket;
-  public player2: WebSocket;
-  private board: string;
+  public white: WebSocket;
+  public black: WebSocket;
+  public currentColor: "white" | "black";
+  private board: Chess;
   private moves: string[];
   private startTime: Date;
-  constructor(p1: WebSocket, p2: WebSocket) {
-    this.player1 = p1;
-    this.player2 = p2;
-    this.board = "";
+  constructor(white: WebSocket, black: WebSocket) {
+    this.white = white;
+    this.black = black;
+    this.currentColor = "white";
+    this.board = new Chess();
     this.moves = [];
     this.startTime = new Date();
   }
 
+  private getCurrentPlayer(socket: WebSocket) {
+    if (this.white === socket) {
+      return "white";
+    }
+    return "black";
+  }
+
   makeMove(socket: WebSocket, move: string) {
-    // who is making the move
-    // is the move valid
-    // is the player checked
-    // update the board
-    // push the move
-    // check if the game is over
-    // send the updated board to both players
+    if (this.getCurrentPlayer(socket) !== this.currentColor) {
+      return "It's not your turn";
+    }
+    try {
+      this.board.move(move);
+      this.moves.push(move);
+      this.currentColor = this.currentColor === "white" ? "black" : "white";
+      console.log(this.board.ascii());
+      return this.board.ascii();
+    } catch (error) {
+      return String(error);
+    }
   }
 }
