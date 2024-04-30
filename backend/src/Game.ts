@@ -32,8 +32,7 @@ export class Game {
       this.board.move(move);
       this.moves.push(move);
       this.currentColor = this.currentColor === "white" ? "black" : "white";
-      console.log(this.board.ascii());
-      return this.board.ascii();
+      return this.board.fen();
     } catch (error) {
       return String(error);
     }
