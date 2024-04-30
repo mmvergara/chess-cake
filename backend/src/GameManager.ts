@@ -37,10 +37,9 @@ export class GameManager {
     if (this.pendingUser) {
       // Create a new game
       const game = new Game(this.pendingUser, socket);
+      game.black.send("Game started");
+      game.white.send("Game started");
       this.games.push(game);
-      socket.send("Game started");
-      this.pendingUser.send("Game started");
-
       this.pendingUser = null;
     } else {
       // If there is no pending user, set the current user as pending
