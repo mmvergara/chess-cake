@@ -20,7 +20,6 @@ export class GameManager {
   removeUser(socket: WebSocket) {
     this.users = this.users.filter((user) => user !== socket);
     // Stop the game if there are no users left
-    
   }
 
   private getGame(socket: WebSocket) {
@@ -39,15 +38,17 @@ export class GameManager {
         if (this.getGame(socket)) {
           return socket.send("You are already in a game");
         }
-
+        // Check if there is a pending user
         if (this.pendingUser) {
+          // Create a new game
           const game = new Game(this.pendingUser, socket);
           this.games.push(game);
           socket.send("Game started");
           this.pendingUser.send("Game started");
-          ``;
+
           this.pendingUser = null;
         } else {
+          // If there is no pending user, set the current user as pending
           this.pendingUser = socket;
           socket.send("Waiting for opponent");
         }
@@ -55,11 +56,19 @@ export class GameManager {
 
       // Move handling
       if (message.type === MOVE) {
+        // find the game
         const game = this.getGame(socket);
+
+        // Check if the user is in a game
         if (!game) return socket.send("You are not in a game");
-        const result = game?.makeMove(socket, message.move);
+
+        // Make the move
+        const result = game.makeMove(socket, message.move);
+
+        // Send the result to both players
         if (result) {
-          socket.send(result);
+          game.white.send(result);
+          game.black.send(result);
         }
       }
     });
