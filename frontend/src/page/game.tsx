@@ -1,14 +1,29 @@
 import { Chess, Move, Square } from "chess.js";
-import { useState } from "react";
-import Dot from "../components/dot";
+import { useEffect, useState } from "react";
+import { useSocket } from "../hooks/useSocket";
+import ChessBoard from "../components/ChessBoard";
+import {
+  GAME_STARTED,
+  IN_QUEUE,
+  MOVE_MADE,
+  START_QUEUE,
+} from "../lib/Messages";
 
 const GamePage = () => {
+  const [gameStarted, setGameStarted] = useState<boolean>(false);
+  const [color, setColor] = useState<"white" | "black">("white");
   const [chess, setChess] = useState<Chess>(new Chess());
   const [availableMoves, setAvailableMoves] = useState<Move[]>([]);
+  const [status, setStatus] = useState<string>("");
   const availableMovesTiles = availableMoves.map((move) => move.to);
+  const ws = useSocket();
+  const findGame = () => {
+    if (!ws) return alert("No connection to server");
+    ws.send(JSON.stringify({ type: START_QUEUE }));
+  };
+
   const handleClick = (square: Square) => {
     let move = availableMoves.find((move) => move.to === square);
-
     // Check if the move is a promotion and set it to queen
     if (move?.promotion) {
       move = availableMoves.find(
@@ -23,57 +38,50 @@ const GamePage = () => {
     }
     setAvailableMoves(chess.moves({ square, verbose: true }));
   };
-  // prettier-ignore
-  const SQUARES: Square[] = [
-  'a8', 'b8', 'c8', 'd8', 'e8', 'f8', 'g8', 'h8',
-  'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7',
-  'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6',
-  'a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
-  'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4',
-  'a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
-  'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
-  'a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1'
-]
+  useEffect(() => {
+    if (ws) {
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
 
-  console.log(availableMoves);
+        switch (message.type) {
+          case IN_QUEUE:
+            setStatus("Finding opponent");
+            console.log("Finding opponent");
+            break;
+          case GAME_STARTED:
+            setGameStarted(true);
+            setColor(message.color);
+            break;
+
+          case MOVE_MADE:
+            console.log("Move made");
+            console.log(event.data);
+            break;
+
+          default:
+            console.log("Unknown message type");
+        }
+      };
+    }
+  }, [ws]);
   return (
     <main className="flex flex-row justify-center">
-      <section aria-label="board" className="flex justify-center">
-        <div className="flex flex-col w-fit p-[30px] bg-[#c7b299]">
-          <div className="flex flex-col drop-shadow-xl ">
-            {chess.board().map((row, i) => (
-              <div key={i} style={{ display: "flex" }}>
-                {row.map((piece, j) => {
-                  const currentSquare = SQUARES[i * 8 + j];
-                  const isHighlighted =
-                    availableMovesTiles.includes(currentSquare);
-                  const backgroundColor =
-                    (i + j) % 2 === 0 ? "#ebecd0" : "#B19470";
-                  return (
-                    <span
-                      key={j}
-                      onClick={() => handleClick(currentSquare)}
-                      style={{ backgroundColor }}
-                      className="w-[76px] h-[76px] flex justify-center items-center cursor-pointer"
-                    >
-                      {piece ? (
-                        <img
-                          src={"./" + piece?.type + piece?.color + ".png"}
-                          alt={piece?.type}
-                          width={62}
-                          height={62}
-                        />
-                      ) : (
-                        isHighlighted && <Dot />
-                      )}
-                    </span>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
+      <section className="text-white">
+        <button className="bg-red-500 flex" onClick={findGame}>
+          Find Game
+        </button>
+        <p>{status}</p>
       </section>
+      {gameStarted && (
+        <section aria-label="board" className="flex justify-center">
+          <ChessBoard
+            availableMovesTiles={availableMovesTiles}
+            onClick={handleClick}
+            chess={chess}
+            color={color}
+          />
+        </section>
+      )}
       <section aria-label="controls"></section>
     </main>
   );
