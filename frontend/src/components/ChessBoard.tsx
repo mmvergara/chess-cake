@@ -5,10 +5,11 @@ type Props = {
   availableMovesTiles: string[];
   onClick: (square: Square) => void;
   chess: Chess;
+  selectedSquare: Square | null;
   color: "w" | "b";
 };
 const ChessBoard = (props: Props) => {
-  const { availableMovesTiles, onClick, chess } = props;
+  const { availableMovesTiles, selectedSquare, onClick, chess } = props;
   // prettier-ignore
   const SQUARES: Square[] = [
     'a8', 'b8', 'c8', 'd8', 'e8', 'f8', 'g8', 'h8',
@@ -36,7 +37,12 @@ const ChessBoard = (props: Props) => {
             {row.map((piece, j) => {
               const currentSquare = SQUARES[i * 8 + j];
               const isHighlighted = availableMovesTiles.includes(currentSquare);
-              const backgroundColor = (i + j) % 2 === 0 ? "#ebecd0" : "#B19470";
+              const backgroundColor =
+                selectedSquare === currentSquare
+                  ? "#c79b49"
+                  : (i + j) % 2 === 0
+                  ? "#ebecd0"
+                  : "#B19470";
               return (
                 <span
                   key={j}
