@@ -1,6 +1,6 @@
-import { INITIALIZE_GAME, MOVE } from "./Messages";
 import { WebSocket } from "ws";
 import { Game } from "./Game";
+import { GAME_STARTED, MOVE, START_QUEUE } from "./Messages";
 
 export class GameManager {
   private games: Game[];
@@ -39,14 +39,16 @@ export class GameManager {
     if (this.pendingUser) {
       // Create a new game
       const game = new Game(this.pendingUser, socket);
-      game.black.send("Game started");
-      game.white.send("Game started");
+      game.white.send(JSON.stringify({ type: GAME_STARTED, color: "white" }));
+      game.black.send(JSON.stringify({ type: GAME_STARTED, color: "black" }));
       this.games.push(game);
+      console.log("Game started");
       this.pendingUser = null;
     } else {
       // If there is no pending user, set the current user as pending
       this.pendingUser = socket;
-      socket.send("Waiting for opponent");
+      console.log("Waiting for opponent");
+      socket.send(JSON.stringify({ type: "IN_QUEUE" }));
     }
   }
 
@@ -62,8 +64,8 @@ export class GameManager {
 
     // Send the result to both players
     if (result) {
-      game.white.send(result);
-      game.black.send(result);
+      game.white.send(JSON.stringify(result));
+      game.black.send(JSON.stringify(result));
     }
   }
 
@@ -73,11 +75,13 @@ export class GameManager {
       console.log("Message: ", message);
 
       // Game initialization
-      if (message.type === INITIALIZE_GAME) {
+      if (message.type === START_QUEUE) {
+        console.log("Initializing game");
         return this.initializeGameHandler(socket);
       }
       // Move handling
       if (message.type === MOVE) {
+        console.log("Making move");
         return this.moveHandler(socket, message.move);
       }
     });
