@@ -9,8 +9,8 @@ export class GameManager {
 
   constructor() {
     this.games = [];
-    this.pendingUser = null;
     this.users = [];
+    this.pendingUser = null;
   }
 
   addUser(socket: WebSocket) {
