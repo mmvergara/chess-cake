@@ -15,11 +15,13 @@ export class GameManager {
 
   addUser(socket: WebSocket) {
     this.users.push(socket);
-    this.addHandler(socket);
+    this.addMessageHandler(socket);
+    console.log("Users: ", this.users.length);
   }
   removeUser(socket: WebSocket) {
     this.users = this.users.filter((user) => user !== socket);
     // Stop the game if there are no users left
+    console.log("Users: ", this.users.length);
   }
 
   private getGame(socket: WebSocket) {
@@ -65,7 +67,7 @@ export class GameManager {
     }
   }
 
-  private addHandler(socket: WebSocket) {
+  private addMessageHandler(socket: WebSocket) {
     socket.on("message", (data) => {
       const message = JSON.parse(data.toString());
       console.log("Message: ", message);
