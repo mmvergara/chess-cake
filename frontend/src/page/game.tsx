@@ -9,6 +9,7 @@ import {
   MOVE_MADE,
   START_QUEUE,
 } from "../lib/Messages";
+import { useSfx } from "../hooks/useSfx";
 
 const GamePage = () => {
   const [gameStarted, setGameStarted] = useState<boolean>(false);
@@ -16,7 +17,10 @@ const GamePage = () => {
   const [color, setColor] = useState<"w" | "b">("w");
   const [chess, setChess] = useState<Chess>(new Chess());
   const [availableMoves, setAvailableMoves] = useState<Move[]>([]);
+  const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [status, setStatus] = useState<string>("");
+
+  const { moveSfx, startSfx, captureSfx } = useSfx();
   const availableMovesTiles = availableMoves.map((move) => move.to);
   const ws = useSocket();
   const findGame = () => {
@@ -27,7 +31,10 @@ const GamePage = () => {
   const handleClick = (square: Square) => {
     if (chess.turn() !== color) return;
     if (!ws) return alert("No connection to server");
+
+    // Check if the square is in the available moves
     let move = availableMoves.find((move) => move.to === square);
+
     // Check if the move is a promotion and set it to queen
     if (move?.promotion) {
       move = availableMoves.find(
@@ -35,13 +42,12 @@ const GamePage = () => {
       );
     }
     if (move) {
-      chess.move(move);
-      setChess(chess);
-      console.log("Move: ", move);
       ws.send(JSON.stringify({ type: MOVE, move: move.san }));
       setAvailableMoves([]);
+      setSelectedSquare(null);
       return;
     }
+    setSelectedSquare(square);
     setAvailableMoves(chess.moves({ square, verbose: true }));
   };
   useEffect(() => {
@@ -56,13 +62,17 @@ const GamePage = () => {
             break;
           case GAME_STARTED:
             setGameStarted(true);
+            startSfx();
             setColor(message.color);
             break;
           case MOVE_MADE:
-            console.log("Move made");
             setChess(new Chess(message.fen));
+            if (message.san.includes("x")) {
+              captureSfx();
+            } else {
+              moveSfx();
+            }
             break;
-
           default:
             console.log("Unknown message type");
         }
@@ -84,6 +94,7 @@ const GamePage = () => {
             onClick={handleClick}
             chess={chess}
             color={color}
+            selectedSquare={selectedSquare}
           />
         </section>
       )}
