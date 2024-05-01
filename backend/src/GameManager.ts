@@ -39,8 +39,8 @@ export class GameManager {
     if (this.pendingUser) {
       // Create a new game
       const game = new Game(this.pendingUser, socket);
-      game.white.send(JSON.stringify({ type: GAME_STARTED, color: "white" }));
-      game.black.send(JSON.stringify({ type: GAME_STARTED, color: "black" }));
+      game.white.send(JSON.stringify({ type: GAME_STARTED, color: "w" }));
+      game.black.send(JSON.stringify({ type: GAME_STARTED, color: "b" }));
       this.games.push(game);
       console.log("Game started");
       this.pendingUser = null;
