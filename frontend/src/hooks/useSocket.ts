@@ -4,7 +4,7 @@ export const useSocket = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8080");
+    const ws = new WebSocket("ws://192.168.100.176:8080");
     ws.onopen = () => {
       setSocket(ws);
       console.log("Connected to server");
