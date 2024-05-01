@@ -36,6 +36,7 @@ export class Game {
       return {
         type: MOVE_MADE,
         fen: this.board.fen(),
+        san: move,
       };
     } catch (error) {
       return {
