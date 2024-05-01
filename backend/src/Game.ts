@@ -1,5 +1,6 @@
 import { Chess } from "chess.js";
 import { WebSocket } from "ws";
+import { ERROR, MOVE_MADE } from "./Messages";
 
 export class Game {
   public white: WebSocket;
@@ -32,9 +33,15 @@ export class Game {
       this.board.move(move);
       this.moves.push(move);
       this.currentColor = this.currentColor === "white" ? "black" : "white";
-      return this.board.fen();
+      return {
+        type: MOVE_MADE,
+        fen: this.board.fen(),
+      };
     } catch (error) {
-      return String(error);
+      return {
+        type: ERROR,
+        message: String(error),
+      };
     }
   }
 }
