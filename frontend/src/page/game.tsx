@@ -6,9 +6,15 @@ const GamePage = () => {
   const [chess, setChess] = useState<Chess>(new Chess());
   const [availableMoves, setAvailableMoves] = useState<Move[]>([]);
   const availableMovesTiles = availableMoves.map((move) => move.to);
-  console.log(chess.board());
   const handleClick = (square: Square) => {
-    const move = availableMoves.find((move) => move.to === square);
+    let move = availableMoves.find((move) => move.to === square);
+
+    // Check if the move is a promotion and set it to queen
+    if (move?.promotion) {
+      move = availableMoves.find(
+        (move) => move.to === square && move.promotion === "q"
+      );
+    }
     if (move) {
       chess.move(move);
       setChess(chess);
@@ -28,6 +34,8 @@ const GamePage = () => {
   'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
   'a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1'
 ]
+
+  console.log(availableMoves);
   return (
     <main className="flex flex-row justify-center">
       <section aria-label="board" className="flex justify-center">
@@ -41,7 +49,6 @@ const GamePage = () => {
                     availableMovesTiles.includes(currentSquare);
                   const backgroundColor =
                     (i + j) % 2 === 0 ? "#ebecd0" : "#B19470";
-
                   return (
                     <span
                       key={j}
