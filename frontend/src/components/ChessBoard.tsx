@@ -5,7 +5,7 @@ type Props = {
   availableMovesTiles: string[];
   onClick: (square: Square) => void;
   chess: Chess;
-  color: "white" | "black";
+  color: "w" | "b";
 };
 const ChessBoard = (props: Props) => {
   const { availableMovesTiles, onClick, chess } = props;
@@ -28,7 +28,7 @@ const ChessBoard = (props: Props) => {
       <div
         className="flex drop-shadow-xl"
         style={{
-          flexDirection: props.color === "white" ? "column" : "column-reverse",
+          flexDirection: props.color === "w" ? "column" : "column-reverse",
         }}
       >
         {chess.board().map((row, i) => (
