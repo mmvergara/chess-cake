@@ -5,6 +5,7 @@ type Props = {
   availableMovesTiles: string[];
   onClick: (square: Square) => void;
   chess: Chess;
+  color: "white" | "black";
 };
 const ChessBoard = (props: Props) => {
   const { availableMovesTiles, onClick, chess } = props;
@@ -20,34 +21,47 @@ const ChessBoard = (props: Props) => {
     'a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1'
   ]
 
-  return chess.board().map((row, i) => (
-    <div key={i} style={{ display: "flex" }}>
-      {row.map((piece, j) => {
-        const currentSquare = SQUARES[i * 8 + j];
-        const isHighlighted = availableMovesTiles.includes(currentSquare);
-        const backgroundColor = (i + j) % 2 === 0 ? "#ebecd0" : "#B19470";
-        return (
-          <span
-            key={j}
-            onClick={() => onClick(currentSquare)}
-            style={{ backgroundColor }}
-            className="w-[76px] h-[76px] flex justify-center items-center cursor-pointer"
-          >
-            {piece ? (
-              <img
-                src={"./" + piece?.type + piece?.color + ".png"}
-                alt={piece?.type}
-                width={62}
-                height={62}
-              />
-            ) : (
-              isHighlighted && <Dot />
-            )}
-          </span>
-        );
-      })}
+  // rotate the board if the player is black
+
+  return (
+    <div className="flex w-fit p-[30px] bg-[#c7b299]">
+      <div
+        className="flex drop-shadow-xl"
+        style={{
+          flexDirection: props.color === "white" ? "column" : "column-reverse",
+        }}
+      >
+        {chess.board().map((row, i) => (
+          <div className="flex flex-row" key={i}>
+            {row.map((piece, j) => {
+              const currentSquare = SQUARES[i * 8 + j];
+              const isHighlighted = availableMovesTiles.includes(currentSquare);
+              const backgroundColor = (i + j) % 2 === 0 ? "#ebecd0" : "#B19470";
+              return (
+                <span
+                  key={j}
+                  onClick={() => onClick(currentSquare)}
+                  style={{ backgroundColor }}
+                  className="w-[76px] h-[76px] flex justify-center items-center cursor-pointer"
+                >
+                  {piece ? (
+                    <img
+                      src={"./" + piece?.type + piece?.color + ".png"}
+                      alt={piece?.type}
+                      width={62}
+                      height={62}
+                    />
+                  ) : (
+                    isHighlighted && <Dot />
+                  )}
+                </span>
+              );
+            })}
+          </div>
+        ))}
+      </div>
     </div>
-  ));
+  );
 };
 
 export default ChessBoard;
