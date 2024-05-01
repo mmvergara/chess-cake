@@ -4,3 +4,5 @@ export const GAME_STARTED = "GAME_STARTED";
 
 export const MOVE = "MOVE";
 export const MOVE_MADE = "MOVE_MADE";
+
+export const ERROR = "ERROR";
