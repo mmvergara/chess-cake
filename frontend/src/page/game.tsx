@@ -5,13 +5,15 @@ import ChessBoard from "../components/ChessBoard";
 import {
   GAME_STARTED,
   IN_QUEUE,
+  MOVE,
   MOVE_MADE,
   START_QUEUE,
 } from "../lib/Messages";
 
 const GamePage = () => {
   const [gameStarted, setGameStarted] = useState<boolean>(false);
-  const [color, setColor] = useState<"white" | "black">("white");
+
+  const [color, setColor] = useState<"w" | "b">("w");
   const [chess, setChess] = useState<Chess>(new Chess());
   const [availableMoves, setAvailableMoves] = useState<Move[]>([]);
   const [status, setStatus] = useState<string>("");
@@ -23,6 +25,8 @@ const GamePage = () => {
   };
 
   const handleClick = (square: Square) => {
+    if (chess.turn() !== color) return;
+    if (!ws) return alert("No connection to server");
     let move = availableMoves.find((move) => move.to === square);
     // Check if the move is a promotion and set it to queen
     if (move?.promotion) {
@@ -33,6 +37,8 @@ const GamePage = () => {
     if (move) {
       chess.move(move);
       setChess(chess);
+      console.log("Move: ", move);
+      ws.send(JSON.stringify({ type: MOVE, move: move.san }));
       setAvailableMoves([]);
       return;
     }
@@ -42,7 +48,7 @@ const GamePage = () => {
     if (ws) {
       ws.onmessage = (event) => {
         const message = JSON.parse(event.data);
-
+        console.log("Message: ", message);
         switch (message.type) {
           case IN_QUEUE:
             setStatus("Finding opponent");
@@ -52,10 +58,9 @@ const GamePage = () => {
             setGameStarted(true);
             setColor(message.color);
             break;
-
           case MOVE_MADE:
             console.log("Move made");
-            console.log(event.data);
+            setChess(new Chess(message.fen));
             break;
 
           default:
